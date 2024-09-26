@@ -55,20 +55,23 @@ def save_data(data):
     with open('budget_data.json', 'w') as f2:
         json.dump(data, f2, indent=4)
 
-def add_amount(array):
+def add_amount(category_name, category_list):
+    if not budget_alert(category_name, category_list):
+        return category_list
+    
     amount_to_be_added = float(input("Enter total transaction amount ($): "))
     date_of_transaction = input("Enter the date of transaction (YYYY-MM-DD) or press enter for today's date: ")
     if date_of_transaction:
         transaction_date = date_of_transaction
     else:
         transaction_date = datetime.today().strftime('%Y-%m-%d')
-    array.append({
+    category_list.append({
         'amount': amount_to_be_added,
         'date': transaction_date
     })
     save_data(data)
     print(f'A transaction of {amount_to_be_added}$ added successfully!')
-    return array
+    return category_list
 
 def delete_entry(arr, entry):
     if entry in arr:
@@ -93,7 +96,6 @@ def loop_entries(arr1):
     print(f"{len(arr1)+1}. Plot line-chart summary")
     print(f"{len(arr1)+2}. Add another category")
     print(f"{len(arr1)+3}. Delete entry")
-    
 
 def list_categories(arr1):
     for index, category in enumerate(arr1):
@@ -104,22 +106,23 @@ def calc_total(arr2):
         sum_total = 0
         for category in arr2.values():
             for transaction in category:
-                sum_total += float(transaction['amount'])
+                sum_total = sum_total + float(transaction['amount'])
         return sum_total
     elif isinstance(arr2, list):
         sum_total = 0
         for x in arr2:
-            sum_total += float(x['amount'])
+            if 'amount' in x:  
+                sum_total += float(x['amount'])
         return sum_total
     else:
         print("Invalid input type for calculating total")
         return 0
 
 def plot_pie():
-    plt.figure()
+    plt.figure(figsize=(20,16))
     sizes = list(totals().values())
     labels = list(totals().keys())
-    plt.pie(sizes, labels=labels, autopct='%1.1f%%', textprops={'fontsize': 12})
+    plt.pie(sizes, labels=labels, autopct='%1.1f%%', textprops={'fontsize': 24})
     plt.title('Overall Distribution of Expenses and Income')
     plt.legend()
     plt.show()
@@ -137,22 +140,51 @@ def plot_line():
     plt.legend()
     plt.show()
 
+def set_budget(bud_categ, bud):
+    if bud_categ in expenses:
+        expenses[bud_categ].append({"budget": bud})
+        save_data(data)
+        return f"Budget of {bud}$ is set successfully to {bud_categ}"
+    else:
+        print("Invalid category name.")
+
+def budget_alert(category_name, category_transactions):
+    budget_entry = None
+    for entry in category_transactions:
+        if 'budget' in entry:
+            budget_entry = entry
+            break
+
+    if budget_entry:
+        budget_limit = budget_entry['budget']
+        current_total = calc_total(category_transactions)
+        
+        if current_total >= budget_limit:
+            print(f"You have reached or exceeded your budget limit for {category_name}. Current total: ${current_total}, Budget: ${budget_limit}")
+            proceed = input("Do you still want to add another transaction? (y/n): ").strip().lower()
+            if proceed != 'y':
+                print("Transaction cancelled to stay within the budget.")
+                return False
+    return True
+
 
 loop_entries(categories)
-money_io = int(input('Welcome, what are you here for? '))
+money_io = input('Type (q) to quit or (s) to set budget limit for expenses.\nChoose a category: ')
+if money_io.isdigit():
+    money_io = int(money_io)
 
 if money_io == categories.index('Income'):
-    income = add_amount(income)
+    income = add_amount('Income', income)
 elif money_io == categories.index('Savings'):
-    savings = add_amount(savings)
+    savings = add_amount('Savings', savings)
 elif money_io == categories.index('Expenses'):
     print("In which category would you like to add?")
-    loop_entries(list(expenses.keys()))
+    list_categories(list(expenses.keys()))
     category_chosen = int(input("Enter category: "))
     expense_keys = list(expenses.keys())
     if category_chosen < len(expense_keys):
         selected_category = expense_keys[category_chosen]
-        expenses[selected_category] = add_amount(expenses[selected_category])
+        expenses[selected_category] = add_amount(selected_category, expenses[selected_category])
     else:
         print("Invalid category selected!")
 elif money_io == len(categories):
@@ -182,6 +214,17 @@ elif money_io == len(categories) + 3:
                 expenses[selected_category] = delete_entry(expenses[selected_category], expenses[selected_category][int(input("Choose an entry to delete: "))])
             else:
                 print("Invalid subcategory selected!")
+elif money_io == "q":
+    print("Bye Bye..")
+    exit()
+# Assuming that person will set to expenses category only
+elif money_io == "s":
+    list_categories(expenses)
+    chose_categ = int(input("Chose category you want to set limit to: "))
+    expenses_list = list(expenses.keys())
+    chosen_categ = expenses_list[chose_categ]
+    budget = float(input("Enter your budget here: "))
+    print(set_budget(chosen_categ, budget))
 else:
     print('Invalid choice!')
 
