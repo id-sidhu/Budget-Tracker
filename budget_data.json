@@ -6,34 +6,61 @@
     ],
     "transactions": {
         "Income": [
-            100.0
+            {
+                "amount": 40.0,
+                "date": "2024-09-26"
+            },
+            {
+                "amount": 700.0,
+                "date": "2024-09-26"
+            },
+            {
+                "amount": 1000.0,
+                "date": "2024-09-26"
+            }
         ],
         "Savings": [
-            30.0
+            {
+                "amount": 100.0,
+                "date": "2024-09-15"
+            },
+            {
+                "amount": 10.0,
+                "date": "2024-09-26"
+            },
+            {
+                "amount": 5.0,
+                "date": "2024-09-26"
+            },
+            {
+                "amount": 7.0,
+                "date": "2024-09-26"
+            }
         ],
         "Expenses": {
             "Rent": [
-                550.0
+                {
+                    "amount": 550.0,
+                    "date": "2024-09-15"
+                }
             ],
-            "Groceries": [],
-            "Transport": [],
+            "Groceries": [
+                {
+                    "amount": 200.0,
+                    "date": "2024-09-15"
+                },
+                {
+                    "amount": 10.0,
+                    "date": "2024-09-26"
+                }
+            ],
+            "Transport": [
+                {
+                    "amount": 45.0,
+                    "date": "2024-09-15"
+                }
+            ],
             "Entertainment": []
         }
-    },
-    "income": [
-        100.0
-    ],
-    "savings": [
-        30.0
-    ],
-    "rent": [],
-    "groceries": [],
-    "transport": [],
-    "entertainment": [],
-    "expenses": {
-        "Rent": [],
-        "Groceries": [],
-        "Transport": [],
-        "Entertainment": []
     }
 }
