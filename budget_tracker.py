@@ -87,67 +87,25 @@ money_io = int(input('Welcome, what are you here for? '))
 if money_io == categories.index('Income'):
     income = add_amount(income)
 elif money_io == categories.index('Savings'):
-   savings = add_amount(savings)
+    savings = add_amount(savings)
 elif money_io == categories.index('Expenses'):
-    print("In which category would you like to add.")
-    loop_entries(expenses)
+    print("In which category would you like to add?")
+    loop_entries(list(expenses.keys()))
     category_chosen = int(input("Enter category: "))
-    if category_chosen == expenses.index("Add another category"):
-        expenses = add_category(expenses)
+    expense_keys = list(expenses.keys())
+    if category_chosen < len(expense_keys):
+        selected_category = expense_keys[category_chosen]
+        expenses[selected_category] = add_amount(expenses[selected_category])
     else:
-        if category_chosen == expenses.index("Rent"):
-           rent = add_amount(rent)
-        elif category_chosen == expenses.index("Groceries"):
-            groceries = add_amount(groceries)
-        elif category_chosen == expenses.index("Transport"):
-            transport = add_amount(transport)
-        elif category_chosen == expenses.index("Entertainment"):
-            entertainment = add_amount(entertainment)
-elif money_io == categories.index('Add another category'):
+        print("Invalid category selected!")
+elif money_io < len(categories):
     categories = add_category(categories)
-elif money_io == categories.index('Remove entry'):
-    catg = int(input('Enter category number from which you want to delete: '))
-    catg_selected = categories[catg].lower()
-    if catg_selected == 'income':
-        print(f"Current entries in Income: {income}")
-        entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-        income = delete_entry(income, entry_to_be_deleted)
-    elif catg_selected == 'savings':
-        print(f"Current entries in Savings: {savings}")
-        entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-        savings = delete_entry(savings, entry_to_be_deleted)
-    elif catg_selected == 'expenses':
-        loop_entries(expenses)
-        exp_catg = int(input('In which category in epenses would you like to delete: '))
-        if exp_catg == expenses.index('Groceries'):
-            print(f"Current entries in Groceries: {groceries}")
-            entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-            groceries = delete_entry(groceries, entry_to_be_deleted)
-        elif exp_catg == expenses.index('Rent'):
-            print(f"Current entries in rent: {rent}")
-            entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-            rent = delete_entry(rent, entry_to_be_deleted)
-        elif exp_catg == expenses.index('Transport'):
-            print(f"Current entries in Transport: {transport}")
-            entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-            transport = delete_entry(transport, entry_to_be_deleted)
-        elif exp_catg == expenses.index('Entertainment'):
-            print(f"Current entries in Entertainment: {entertainment}")
-            entry_to_be_deleted = float(input('Enter transaction that you want to delete: '))
-            entertainment = delete_entry(entertainment, entry_to_be_deleted)
-        else:
-            print("Invalid category selected!")
 else:
     print('Invalid choice!')
 
-data['income'] = income
-data['savings'] = savings
-data['rent'] = rent
-data['groceries'] = groceries
-data['transport'] = transport
-data['entertainment'] = entertainment
-data['categories'] = categories
-data['expenses'] = expenses
+data['transactions']['Income'] = income
+data['transactions']['Savings'] = savings
+data['transactions']['Expenses'] = expenses
 
 save_data(data)
 
@@ -158,15 +116,14 @@ print('Total groceries: ', total(groceries), '$')
 print('Total entertainment: ', total(entertainment), '$')
 print('Total transport: ', total(transport), '$')
 
-
-plt.plot(income, label='Income')  
-plt.plot(savings, label='Savings') 
-plt.plot(groceries, label='Groceries') 
-plt.plot(rent, label='Rent')  
-plt.plot(transport, label='Transport') 
-plt.plot(entertainment, label='Entertainment') 
+plt.plot(range(len(income)), income, label='Income')  
+plt.plot(range(len(savings)), savings, label='Savings') 
+plt.plot(range(len(groceries)), groceries, label='Groceries') 
+plt.plot(range(len(rent)), rent, label='Rent')  
+plt.plot(range(len(transport)), transport, label='Transport') 
+plt.plot(range(len(entertainment)), entertainment, label='Entertainment') 
 plt.title('Your monthly chart')
 plt.xlabel('Days')
-plt.ylabel('Value')
+plt.ylabel('Value ($)')
 plt.legend()
 plt.show()

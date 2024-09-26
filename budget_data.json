@@ -1,0 +1,39 @@
+{
+    "categories": [
+        "Income",
+        "Expenses",
+        "Savings"
+    ],
+    "transactions": {
+        "Income": [
+            100.0
+        ],
+        "Savings": [
+            30.0
+        ],
+        "Expenses": {
+            "Rent": [
+                550.0
+            ],
+            "Groceries": [],
+            "Transport": [],
+            "Entertainment": []
+        }
+    },
+    "income": [
+        100.0
+    ],
+    "savings": [
+        30.0
+    ],
+    "rent": [],
+    "groceries": [],
+    "transport": [],
+    "entertainment": [],
+    "expenses": {
+        "Rent": [],
+        "Groceries": [],
+        "Transport": [],
+        "Entertainment": []
+    }
+}
