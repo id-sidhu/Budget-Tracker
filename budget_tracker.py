@@ -4,6 +4,21 @@ import os
 import matplotlib.pyplot as plt
 from datetime import datetime
 
+def default_structure():
+    return {
+        "categories": ["Income", "Expenses", "Savings"],
+        "transactions": {
+            "Income": [],
+            "Savings": [],
+            "Expenses": {
+                "Rent": [],
+                "Groceries": [],
+                "Transport": [],
+                "Entertainment": []
+            }
+        }
+    }
+
 def load_data():
     if os.path.exists("budget_data.json"):
         with open('budget_data.json', 'r') as f:
@@ -35,22 +50,7 @@ def totals():
     'Transport': calc_total(transport),
     'Entertainment': calc_total(entertainment)
     }
-
-def default_structure():
-    return {
-        "categories": ["Income", "Expenses", "Savings"],
-        "transactions": {
-            "Income": [],
-            "Savings": [],
-            "Expenses": {
-                "Rent": [],
-                "Groceries": [],
-                "Transport": [],
-                "Entertainment": []
-            }
-        }
-    }
-    
+ 
 def save_data(data):
     with open('budget_data.json', 'w') as f2:
         json.dump(data, f2, indent=4)
@@ -89,8 +89,11 @@ def add_category(array):
 def loop_entries(arr1):
     for index, category in enumerate(arr1):
         print(f"{index}. {category}")
-    print(f"{len(arr1)}. Add another category")
-    print(f"{len(arr1)+1}. Delete entry")
+    print(f"{len(arr1)}. Plot pie-chart summary")
+    print(f"{len(arr1)+1}. Plot line-chart summary")
+    print(f"{len(arr1)+2}. Add another category")
+    print(f"{len(arr1)+3}. Delete entry")
+    
 
 def list_categories(arr1):
     for index, category in enumerate(arr1):
@@ -153,8 +156,12 @@ elif money_io == categories.index('Expenses'):
     else:
         print("Invalid category selected!")
 elif money_io == len(categories):
+    plot_pie()
+elif money_io == len(categories)+1:
+    plot_line()
+elif money_io == len(categories)+2:
     categories = add_category(categories)
-elif money_io == len(categories) + 1:
+elif money_io == len(categories) + 3:
     print("From which category you would like to delete adn entry?")
     list_categories(categories)
     del_index = int(input("Choose category: "))
@@ -192,5 +199,3 @@ print('Total entertainment: ', calc_total(entertainment), '$')
 print('Total transport: ', calc_total(transport), '$')
 total_expenses = sum([calc_total(expenses[category]) for category in expenses])
 print('Remaining balance: ', calc_total(income) - total_expenses)
-
-
