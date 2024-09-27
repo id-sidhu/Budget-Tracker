@@ -32,8 +32,10 @@ To run this project locally, follow the instructions below to set it up on your 
    ```bash
    git clone https://github.com/id-sidhu/Python-Projects.git
 2. Navigate to project directory:
+   ```bash
    cd Python-Projects
 3. Run the application:
+   ```bash
    python3 budget_tracker.py
 
 ## Future Improvements
