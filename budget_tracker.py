@@ -153,6 +153,7 @@ def plot_line():
     plt.title('Your monthly chart')
     plt.xlabel('Days')
     plt.ylabel('Value ($)')
+    plt.xticks(rotation=45)
     plt.legend()
     plt.show()
 
@@ -185,7 +186,7 @@ def budget_alert(category_name, category_transactions):
 
 def clear_terminal():
     if os.name == 'nt':
-        os.system(cls)
+        os.system('cls')
     else:
         os.system('clear')
 
