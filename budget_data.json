@@ -67,7 +67,12 @@
                     "date": "2024-09-15"
                 }
             ],
-            "Entertainment": []
+            "Entertainment": [
+                {
+                    "amount": 10.0,
+                    "date": "2024-09-26"
+                }
+            ]
         }
     }
 }

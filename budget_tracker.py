@@ -3,6 +3,7 @@ import json
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime
+import sys
 
 def default_structure():
     return {
@@ -59,12 +60,22 @@ def add_amount(category_name, category_list):
     if not budget_alert(category_name, category_list):
         return category_list
     
-    amount_to_be_added = float(input("Enter total transaction amount ($): "))
-    date_of_transaction = input("Enter the date of transaction (YYYY-MM-DD) or press enter for today's date: ")
-    if date_of_transaction:
-        transaction_date = date_of_transaction
-    else:
-        transaction_date = datetime.today().strftime('%Y-%m-%d')
+    try: 
+        amount_to_be_added = float(input("Enter total transaction amount ($): "))
+    except ValueError:
+        print("Something went wrong. Make sure you have entered amount correctly.")
+        return category_list
+
+    try:    
+        date_of_transaction = input("Enter the date of transaction (YYYY-MM-DD) or press enter for today's date: ")
+        if date_of_transaction:
+            transaction_date = date_of_transaction
+        else:
+            transaction_date = datetime.today().strftime('%Y-%m-%d')
+    except ValueError:
+        print("Something went wrong. Make sure you have entered amount correctly.")
+        return category_list
+    
     category_list.append({
         'amount': amount_to_be_added,
         'date': transaction_date
@@ -74,13 +85,18 @@ def add_amount(category_name, category_list):
     return category_list
 
 def delete_entry(arr, entry):
-    if entry in arr:
-        arr.remove(entry)
-        save_data(data)
-        print(f'Entry {entry} deleted successfully!')
-    else:
-        print(f'Entry {entry} not found in the list.')
+    try:
+        found = next(item for item in arr if item.get('amount') == entry.get('amount') and item.get('date') == entry.get('date'))
+        if found:
+            arr.remove(found)
+            save_data(data)
+            print(f'Entry with amount {entry.get("amount")} and date {entry.get("date")} deleted successfully!')
+        else:
+            print('Entry not found in the list.')
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
     return arr
+
 
 def add_category(array):
     category_to_be_added = input("Type the name of category you would like to add: ")
@@ -167,78 +183,93 @@ def budget_alert(category_name, category_transactions):
                 return False
     return True
 
-
-loop_entries(categories)
-money_io = input('Type (q) to quit or (s) to set budget limit for expenses.\nChoose a category: ')
-if money_io.isdigit():
-    money_io = int(money_io)
-
-if money_io == categories.index('Income'):
-    income = add_amount('Income', income)
-elif money_io == categories.index('Savings'):
-    savings = add_amount('Savings', savings)
-elif money_io == categories.index('Expenses'):
-    print("In which category would you like to add?")
-    list_categories(list(expenses.keys()))
-    category_chosen = int(input("Enter category: "))
-    expense_keys = list(expenses.keys())
-    if category_chosen < len(expense_keys):
-        selected_category = expense_keys[category_chosen]
-        expenses[selected_category] = add_amount(selected_category, expenses[selected_category])
+def clear_terminal():
+    if os.name == 'nt':
+        os.system(cls)
     else:
-        print("Invalid category selected!")
-elif money_io == len(categories):
-    plot_pie()
-elif money_io == len(categories)+1:
-    plot_line()
-elif money_io == len(categories)+2:
-    categories = add_category(categories)
-elif money_io == len(categories) + 3:
-    print("From which category you would like to delete adn entry?")
-    list_categories(categories)
-    del_index = int(input("Choose category: "))
-    if categories[del_index] == 'Income':
-        list_categories(income)
-        income = delete_entry(income, input("Chose entry to be deleted."))
-    elif categories[del_index] == 'Savings':
-        list_categories(savings)
-        savings = delete_entry(savings, input("Chose entry to be deleted."))
-    elif categories[del_index] == 'Expenses':
-            print("In which subcategory would you like to delete?")
+        os.system('clear')
+
+def main():
+    global categories, income, expenses, savings, rent, groceries, transport, entertainment
+    while True: 
+        loop_entries(categories)
+        money_io = input('Type (q) to quit or (s) to set budget limit for expenses.\nChoose a category: ')
+
+        if money_io == 'q':  
+            print("Bye Bye..")
+            break  
+
+        if money_io.isdigit():
+            money_io = int(money_io)
+
+        if money_io == categories.index('Income'):
+            income = add_amount('Income', income)
+        elif money_io == categories.index('Savings'):
+            savings = add_amount('Savings', savings)
+        elif money_io == categories.index('Expenses'):
+            print("In which category would you like to add?")
             list_categories(list(expenses.keys()))
-            subcategory_chosen = int(input("Enter subcategory: "))
+            category_chosen = int(input("Enter category: "))
             expense_keys = list(expenses.keys())
-            if subcategory_chosen < len(expense_keys):
-                selected_category = expense_keys[subcategory_chosen]
-                list_categories(expenses[selected_category])
-                expenses[selected_category] = delete_entry(expenses[selected_category], expenses[selected_category][int(input("Choose an entry to delete: "))])
+            if category_chosen < len(expense_keys):
+                selected_category = expense_keys[category_chosen]
+                expenses[selected_category] = add_amount(selected_category, expenses[selected_category])
             else:
-                print("Invalid subcategory selected!")
-elif money_io == "q":
-    print("Bye Bye..")
-    exit()
-# Assuming that person will set to expenses category only
-elif money_io == "s":
-    list_categories(expenses)
-    chose_categ = int(input("Chose category you want to set limit to: "))
-    expenses_list = list(expenses.keys())
-    chosen_categ = expenses_list[chose_categ]
-    budget = float(input("Enter your budget here: "))
-    print(set_budget(chosen_categ, budget))
-else:
-    print('Invalid choice!')
+                print("Invalid category selected!")
+        elif money_io == len(categories):
+            plot_pie()
+        elif money_io == len(categories)+1:
+            plot_line()
+        elif money_io == len(categories)+2:
+            categories = add_category(categories)
+        elif money_io == len(categories) + 3:
+            print("From which category you would like to delete an entry?")
+            list_categories(categories)
+            del_index = int(input("Choose category: "))
+            if categories[del_index] == 'Income':
+                list_categories(income)
+                income = delete_entry(income, input("Choose entry to be deleted."))
+            elif categories[del_index] == 'Savings':
+                list_categories(savings)
+                savings = delete_entry(savings, input("Choose entry to be deleted."))
+            elif categories[del_index] == 'Expenses':
+                print("In which subcategory would you like to delete?")
+                list_categories(list(expenses.keys()))
+                subcategory_chosen = int(input("Enter subcategory: "))
+                expense_keys = list(expenses.keys())
+                if subcategory_chosen < len(expense_keys):
+                    selected_category = expense_keys[subcategory_chosen]
+                    list_categories(expenses[selected_category])
+                    expenses[selected_category] = delete_entry(expenses[selected_category], expenses[selected_category][int(input("Choose an entry to delete: "))])
+                else:
+                    print("Invalid subcategory selected!")
+        elif money_io == "s":
+            list_categories(expenses)
+            chose_categ = int(input("Choose category you want to set limit to: "))
+            expenses_list = list(expenses.keys())
+            chosen_categ = expenses_list[chose_categ]
+            budget = float(input("Enter your budget here: "))
+            print(set_budget(chosen_categ, budget))
+        else:
+            print('Invalid choice!')
 
-data['transactions']['Income'] = income
-data['transactions']['Savings'] = savings
-data['transactions']['Expenses'] = expenses
+        save_data(data)
 
-save_data(data)
+        # print('Total income: ', calc_total(income), '$')
+        # print('Total savings: ', calc_total(savings), '$')
+        # print('Total rent: ', calc_total(rent), '$')
+        # print('Total groceries: ', calc_total(groceries), '$')
+        # print('Total entertainment: ', calc_total(entertainment), '$')
+        # print('Total transport: ', calc_total(transport), '$')
+        total_expenses = sum([calc_total(expenses[category]) for category in expenses])
+        print('Remaining balance: ', calc_total(income) - total_expenses)
+        loop_continuity = input("Do you want to make any other modification (y/n): ")
+        if loop_continuity != 'y':
+            clear_terminal()
+            return False
+        
+        clear_terminal()
 
-print('Total income: ', calc_total(income), '$')
-print('Total savings: ', calc_total(savings), '$')
-print('Total rent: ', calc_total(rent), '$')
-print('Total groceries: ', calc_total(groceries), '$')
-print('Total entertainment: ', calc_total(entertainment), '$')
-print('Total transport: ', calc_total(transport), '$')
-total_expenses = sum([calc_total(expenses[category]) for category in expenses])
-print('Remaining balance: ', calc_total(income) - total_expenses)
+
+if __name__ == '__main__':
+    main()
