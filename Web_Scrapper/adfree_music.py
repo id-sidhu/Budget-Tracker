@@ -1,13 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys as sk
-from selenium.webdriver.common.action_chains import ActionChains
-import tkinter as tk
 from pytube import YouTube
+import tkinter as tk
 import pygetwindow as gw
 import keyboard as k
 import schedule
@@ -15,9 +12,13 @@ import pyautogui
 import time
 import os
 
+current_video = None
+driver = None
+
 def get_active_window():
     return gw.getActiveWindow()
 
+current_window = get_active_window()
 def now_playing():
     global current_video
     new_video = driver.current_url
@@ -27,18 +28,23 @@ def now_playing():
         current_video = new_video
 
 def play_song():
-    if get_active_window() == current_window:
-        search_query2 = input("Enter song or artist name: ").replace(" ", "+")
-        if search_query2 == "":
-            search_query2 = "latest songs"
-        driver.get(f'https://www.youtube.com/results?search_query={search_query2}')
+    search_query2 = input("Enter song or artist: ").replace(" ", "+")
+    if not search_query2:
+        search_query2 = "latest songs"
+    print(f"Searching for: {search_query2}")
+    driver.get(f'https://www.youtube.com/results?search_query={search_query2}')
+    try:
         first_video = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.XPATH, '(//a[@id="video-title"])[1]'))
-                )
+            EC.presence_of_element_located((By.XPATH, '(//a[@id="video-title"])[1]'))
+        )
         first_video.click()
-    else: 
-        pass
-
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//ytd-player[@id='ytd-player']"))
+        )
+        current_video = driver.current_url
+        print(f"Now playing: {YouTube(current_video).title}")
+    except Exception as e:
+        print(f"Error during search or play: {e}")
 
 def clear_terminal():
     if os.name == "nt":
@@ -46,29 +52,32 @@ def clear_terminal():
     else:
         os.system('clear')
 
+def get_tkinter_window():
+    return(gw.getActiveWindow())
+
 def pause():
-    if get_active_window() == current_window:
+    # if get_active_window() == current_window or get_active_window() == get_tkinter_window:
         pause_element = driver.find_element(By.XPATH, "//button[@class='ytp-play-button ytp-button']")
         pause_element.click()
         return ()
-    else:
+    # else:
         pass
 
 def play_next():
-    if get_active_window() == current_window:
+    # if get_active_window() == current_window or get_active_window() == get_tkinter_window:
         next_elem = driver.find_element(By.XPATH, '//a[@class="ytp-next-button ytp-button"]')
         next_elem.click()
-    else:
+    # else:
         pass
 
 def incre_vol():
-    if get_active_window() == current_window:
+    if get_active_window() == current_window or get_active_window() == get_tkinter_window:
         pyautogui.press('volumeup')
     else:
         pass
 
 def decre_vol():
-    if get_active_window() == current_window:
+    if get_active_window() == current_window or get_active_window() == get_tkinter_window:
         pyautogui.press('volumedown')
     else:
         pass
@@ -78,50 +87,37 @@ def quit_player():
 
 
 def mute():
-    if get_active_window() == current_window:    
+    # if get_active_window() == current_window or get_active_window() == get_tkinter_window:    
         mute_elem = driver.find_element(By.XPATH, "//button[@class='ytp-mute-button ytp-button']")
         mute_elem.click()
-    else:
-        pass
+    # else:
+        # pass
 
-current_window = get_active_window()
+def setup_driver():
+    global driver
+    brave_path = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
+    chromedriver_path = "C:\\chromedriver\\chromedriver.exe"
+    options = webdriver.ChromeOptions()
+    options.binary_location = brave_path
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
 
-brave_path = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"
-chromedriver_path = "C:\\chromedriver\\chromedriver.exe"
-
-options = webdriver.ChromeOptions()
-options.binary_location = brave_path
-
-driver = webdriver.Chrome(service=Service(chromedriver_path), options=options)
-tk_root = tk.Tk()
-
-try:
-    button1 = tk.Button(tk_root, text="Play", command=pause)
+def main():
+    setup_driver()
+    play_song()
+    print("Setting up driver...")
+    tk_root = tk.Tk()
+    # entry = tk.Entry(tk_root)
+    button1 = tk.Button(tk_root, text="Pause/Play", command=pause)
     button2 = tk.Button(tk_root, text="Play Next", command=play_next)
     button3 = tk.Button(tk_root, text="Search", command=play_song)
     button4 = tk.Button(tk_root, text="Mute", command=mute)
     button5 = tk.Button(tk_root, text="Quit", command=quit_player)
-    entry = tk.Entry()
     button1.pack()
     button2.pack()
     button3.pack()
     button4.pack()
     button5.pack()
-    entry.pack()
-
-    # query_from_tk = entry.get()
-    # print(query_from_tk)
-    search_query = input("Enter song or artist name: ").replace(" ", "+")
-    if search_query == "":
-            search_query = "latest songs"
-    driver.get(f'https://www.youtube.com/results?search_query={search_query}')
-    first_video = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '(//a[@id="video-title"])[1]'))
-            )
-    first_video.click()
-    current_video = driver.current_url
-    print(f"Now playing: {YouTube(current_video).title}")
-
+    print("Setting up GUI...")
     schedule.every(5).seconds.do(now_playing)
 
     k.add_hotkey('space', pause)
@@ -132,10 +128,16 @@ try:
     k.add_hotkey('shift+m', mute)
     k.add_hotkey('q', quit_player)
 
-    tk_root.mainloop()
+    print('mainloop starting')
 
-    while True:
-        schedule.run_pending()
-        time.sleep(3)
-finally:
-    driver.close()
+    tk_root.mainloop()
+    try:
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+    finally:
+        if driver:
+            driver.close()
+
+if __name__ == "__main__":
+    main()
