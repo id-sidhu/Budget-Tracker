@@ -33,6 +33,7 @@ This project is a custom music player that uses Selenium with the Brave browser 
 You can install the necessary libraries using:
 	```bash
 	pip install selenium pytube keyboard schedule pygetwindow pyautogui
+	```
 
 
 ## Setup and Configuration
